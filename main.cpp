@@ -1,20 +1,26 @@
 #include <fstream>
 #include <vector>
 #include <stdexcept>
+#include <algorithm>
 #ifdef __cpp_lib_print
 #include <print>
 #else
 #include <iostream>
 #endif
 
-struct Teacher {
-  std::string name;
-  std::string lastname;
+struct Person {
+  std::string name, lastname;
+  Person(std::string name, std::string lastname) : name{name}, lastname{lastname} {};
+
+  std::string get_full_name() const { return name + " " + lastname; }
 };
 
-struct Student {
-  std::string name;
-  std::string lastname;
+struct Teacher : Person {
+  Teacher(std::string name, std::string lastname) : Person{name, lastname} {}
+};
+
+struct Student : Person {
+  Student(std::string name, std::string lastname) : Person{name, lastname} {}
 };
 
 struct Classroom {
@@ -22,9 +28,22 @@ struct Classroom {
   std::vector<Student> students;
 };
 
-// Отсортировать людей в классе по именам
+// Отсортировать людей в классе
 std::string sorted_classroom_list(Classroom &classroom) {
-  return std::string{};
+  std::vector<Person*> people;  
+  for (auto &teacher : classroom.teachers)
+    people.push_back(&teacher);
+  
+  for (auto &student : classroom.students)
+    people.push_back(&student);
+
+  std::sort(people.begin(), people.end(), [] (auto person_a, auto person_b) {return person_a->get_full_name() < person_b->get_full_name();});
+
+  std::string result;
+  for (auto person : people)
+    result += person->get_full_name() + "\n";
+  
+  return result;
 }
 
 Classroom parse_classroom_from_file(const std::string &path);
